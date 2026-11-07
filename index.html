@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Net Revenue Test Planner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f2f4f3; --surface: #ffffff; --ink: #16201c; --muted: #5e6a64; --line: #dce1de; --line2: #c9d0cc;
+    --accent: #0e6b57; --accent-ink: #ffffff; --link: #1f5fbf;
+    --red: #b3261e; --red-bg: #fbe9e7; --amber: #8a5300; --amber-bg: #fff3dc;
+    --green: #1d6b3f; --green-bg: #e6f4ea; --grey-bg: #eceeed;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #121715; --surface: #1b211e; --ink: #e8ecea; --muted: #9aa5a0; --line: #2c3430; --line2: #3a443f;
+      --accent: #4cc3a5; --accent-ink: #0d1412; --link: #8ab4ff;
+      --red: #ffa79f; --red-bg: #3b1f1c; --amber: #f6c76e; --amber-bg: #392d14;
+      --green: #86d9a6; --green-bg: #173123; --grey-bg: #262d2a;
+      color-scheme: dark;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Public Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--ink); padding: 2.5rem 1rem 4rem; line-height: 1.45; }
+  .container { max-width: 1000px; margin: 0 auto; }
+  header { max-width: 70ch; margin-bottom: 1.25rem; }
+  h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.01em; margin-bottom: .5rem; }
+  h2 { font-size: 19px; font-weight: 700; margin-bottom: .35rem; }
+  .lede { font-size: 15px; color: var(--muted); }
+  .section-intro { font-size: 14px; color: var(--muted); margin-bottom: 1rem; max-width: 75ch; }
+  .actions-top { margin-bottom: 1.5rem; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+  .example-note { font-size: 13px; color: var(--muted); }
+  .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem; margin-bottom: 1.5rem; }
+  .fields { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+  @media (max-width: 820px) { .fields { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 460px) { .fields { grid-template-columns: 1fr; } }
+  label { font-size: 13px; font-weight: 500; display: block; margin-bottom: 6px; }
+  .hint { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  input, select { width: 100%; border: 1px solid var(--line2); background: var(--surface); color: var(--ink); border-radius: 6px; padding: 9px 11px; font: inherit; font-size: 14px; }
+  input:focus-visible, select:focus-visible, button:focus-visible, a:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
+  .secondary { background: var(--surface); color: var(--ink); border: 1px solid var(--line2); border-radius: 6px; padding: 10px 16px; font: inherit; font-size: 14px; cursor: pointer; }
+  .group-label { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; margin: 18px 0 10px; }
+  .group-label:first-child { margin-top: 0; }
+
+  .output { margin-top: 1.25rem; border-top: 1px solid var(--line); padding-top: 1.25rem; }
+  .verdict { border-radius: 8px; padding: 14px 16px; margin-bottom: 1rem; border-left: 4px solid var(--sev); background: var(--sev-bg); }
+  .verdict b { display: block; font-size: 17px; margin-bottom: 3px; color: var(--sev); }
+  .verdict p { font-size: 14px; }
+  .v-good { --sev: var(--green); --sev-bg: var(--green-bg); }
+  .v-bad { --sev: var(--red); --sev-bg: var(--red-bg); }
+  .v-warn { --sev: var(--amber); --sev-bg: var(--amber-bg); }
+  .v-neutral { --sev: var(--muted); --sev-bg: var(--grey-bg); }
+  .stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+  @media (max-width: 680px) { .stats { grid-template-columns: 1fr; } }
+  .stat { border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; }
+  .stat .k { font-size: 12px; color: var(--muted); }
+  .stat .v { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; margin: 2px 0; }
+  .stat .d { font-size: 12px; color: var(--muted); }
+  .error { font-size: 13px; color: var(--red); background: var(--red-bg); border-radius: 6px; padding: 10px 14px; }
+
+  .arms { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  @media (max-width: 680px) { .arms { grid-template-columns: 1fr; } }
+  .arm h3 { font-size: 14px; font-weight: 600; margin-bottom: 10px; }
+  .arm .fields { grid-template-columns: 1fr 1fr; }
+  .check { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; margin-top: 14px; }
+  .check input { width: auto; margin-top: 3px; }
+  .table-wrap { overflow-x: auto; margin-top: 1rem; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 520px; }
+  th { text-align: right; font-weight: 600; color: var(--muted); font-size: 12px; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+  th:first-child, td:first-child { text-align: left; }
+  td { padding: 9px 10px; border-bottom: 1px solid var(--line); text-align: right; font-variant-numeric: tabular-nums; }
+  tr.key td { font-weight: 700; }
+  .pos { color: var(--green); } .neg { color: var(--red); }
+  .method { font-size: 13px; color: var(--muted); max-width: 80ch; }
+  .method p { margin-bottom: 8px; }
+  footer { margin-top: 2rem; font-size: 12px; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>Net Revenue Test Planner</h1>
+    <p class="lede">Plan and read A/B tests on net revenue per visitor, so a lift in conversions that later gets refunded doesn’t count as a win. Built for offer tests like money-back guarantees, where more people buy but more people also ask for their money back.</p>
+  </header>
+  <div class="actions-top"><button class="secondary" id="sampleBtn">See an example</button><span class="example-note">A money-back guarantee that sells more, but gets refunded more.</span></div>
+
+  <!-- PLAN -->
+  <section class="panel" aria-labelledby="planTitle">
+    <h2 id="planTitle">1. Plan the test</h2>
+    <p class="section-intro">How big a change you expect, and how long the test needs to run to detect it, including the time it takes refunds to come in.</p>
+
+    <div class="group-label">Your store today (version A)</div>
+    <div class="fields">
+      <div><label for="pVisitors">Visitors per day</label><input id="pVisitors" type="number" min="1" step="any"><p class="hint">Across both versions.</p></div>
+      <div><label for="pCr">Conversion rate (%)</label><input id="pCr" type="number" min="0" step="any"></div>
+      <div><label for="pAov">Average order value</label><input id="pAov" type="number" min="0" step="any"></div>
+      <div><label for="pRefA">Orders refunded (%)</label><input id="pRefA" type="number" min="0" max="99" step="any"></div>
+    </div>
+
+    <div class="group-label">What you expect from the new offer (version B)</div>
+    <div class="fields">
+      <div><label for="pLift">Conversion lift (%)</label><input id="pLift" type="number" step="any"><p class="hint">e.g. 12 means 12% more orders.</p></div>
+      <div><label for="pRefB">Orders refunded (%)</label><input id="pRefB" type="number" min="0" max="99" step="any"><p class="hint">A guarantee usually raises this.</p></div>
+      <div><label for="pWindow">Refund window (days)</label><input id="pWindow" type="number" min="0" step="1"><p class="hint">How long buyers can ask for a refund.</p></div>
+      <div><label for="pCv">Order value spread (%)</label><input id="pCv" type="number" min="0" step="any" value="50"><p class="hint">How much order values vary. 50 suits most stores.</p></div>
+    </div>
+
+    <div class="group-label">How sure you want to be</div>
+    <div class="fields">
+      <div><label for="pConf">Confidence</label><select id="pConf"><option value="0.10">90%</option><option value="0.05" selected>95%</option><option value="0.01">99%</option></select></div>
+      <div><label for="pPow">Chance of detecting a real lift</label><select id="pPow"><option value="0.8416" selected>80%</option><option value="1.2816">90%</option></select></div>
+    </div>
+
+    <div class="output" id="planOut" aria-live="polite"></div>
+  </section>
+
+  <!-- READ -->
+  <section class="panel" aria-labelledby="readTitle">
+    <h2 id="readTitle">2. Read the results</h2>
+    <p class="section-intro">Enter what each version did. Use refunds as the money refunded so far. The verdict uses the confidence level and order value spread from step 1.</p>
+    <div class="arms">
+      <div class="arm">
+        <h3>A: current offer</h3>
+        <div class="fields">
+          <div><label for="aV">Visitors</label><input id="aV" type="number" min="0" step="any"></div>
+          <div><label for="aO">Orders</label><input id="aO" type="number" min="0" step="any"></div>
+          <div><label for="aR">Revenue</label><input id="aR" type="number" min="0" step="any"></div>
+          <div><label for="aF">Refunds</label><input id="aF" type="number" min="0" step="any"></div>
+        </div>
+      </div>
+      <div class="arm">
+        <h3>B: new offer</h3>
+        <div class="fields">
+          <div><label for="bV">Visitors</label><input id="bV" type="number" min="0" step="any"></div>
+          <div><label for="bO">Orders</label><input id="bO" type="number" min="0" step="any"></div>
+          <div><label for="bR">Revenue</label><input id="bR" type="number" min="0" step="any"></div>
+          <div><label for="bF">Refunds</label><input id="bF" type="number" min="0" step="any"></div>
+        </div>
+      </div>
+    </div>
+    <label class="check"><input type="checkbox" id="windowDone"> The refund window has closed for everyone who bought during the test</label>
+    <div class="output" id="readOut" aria-live="polite"></div>
+  </section>
+
+  <section class="panel method" aria-labelledby="methodTitle">
+    <h2 id="methodTitle">How it works</h2>
+    <p><b>Why net revenue per visitor.</b> Conversion rate alone rewards an offer that sells more but gets refunded more. Net revenue per visitor (revenue minus refunds, divided by everyone who saw the page) counts both, so it answers the real question: does B make more money per visitor?</p>
+    <p><b>Break-even lift.</b> If B gets refunded more often, it has to convert better just to stand still. The break-even lift is how much better, before any real gain.</p>
+    <p><b>Sample size.</b> Each visitor’s net revenue is zero if they don’t buy, or the order value if they buy and keep it. The planner estimates the spread of that number from your conversion rate, order value, order value spread and refund rate, then uses a standard two-sample test to find how many visitors each version needs.</p>
+    <p><b>Duration.</b> The test runs in full weeks (at least two) so every weekday is covered equally. You then wait the refund window before reading the result, because refunds from late buyers haven’t arrived yet.</p>
+    <p><b>Limits.</b> Results use an estimate of order value spread rather than order-level data, and treat each refund as a full refund. For a final decision on a large test, check the result with order-level data.</p>
+  </section>
+
+  <footer>Built by Carlos Torres. Runs entirely in your browser; nothing you enter is sent anywhere.</footer>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const num = id => { const v = parseFloat($(id).value); return Number.isFinite(v) ? v : NaN; };
+const fmt = (v, d = 2) => v.toLocaleString(undefined, { minimumFractionDigits: d, maximumFractionDigits: d });
+const fmtInt = v => Math.round(v).toLocaleString();
+const pct = (v, d = 1) => (v * 100).toFixed(d) + '%';
+const signed = (v, d = 1) => (v > 0 ? '+' : '') + (v * 100).toFixed(d) + '%';
+const Z_CONF = { '0.10': 1.6449, '0.05': 1.96, '0.01': 2.5758 };
+
+// Standard normal CDF (Abramowitz–Stegun 26.2.17)
+function phi(z) {
+  const t = 1 / (1 + 0.2316419 * Math.abs(z));
+  const d = 0.3989423 * Math.exp(-z * z / 2);
+  const p = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
+  return z > 0 ? 1 - p : p;
+}
+
+// Net revenue per visitor: 0 if no purchase, order value if bought and kept.
+// p = conversion rate, aov = average order value, cv = order value spread, r = share of orders refunded
+function perVisitor(p, aov, cv, r) {
+  const mean = p * (1 - r) * aov;
+  const ex2 = p * (1 - r) * aov * aov * (1 + cv * cv);
+  return { mean, variance: Math.max(ex2 - mean * mean, 0) };
+}
+
+function verdict(cls, title, text) {
+  return `<div class="verdict ${cls}"><b>${title}</b><p>${text}</p></div>`;
+}
+function stat(k, v, d) {
+  return `<div class="stat"><div class="k">${k}</div><div class="v">${v}</div><div class="d">${d}</div></div>`;
+}
+
+// ---------- 1. Plan ----------
+function plan() {
+  const out = $('planOut');
+  const dv = num('pVisitors'), cr = num('pCr') / 100, aov = num('pAov'), rA = num('pRefA') / 100;
+  const lift = num('pLift') / 100, rB = num('pRefB') / 100, win = num('pWindow'), cv = num('pCv') / 100;
+  const vals = [dv, cr, aov, rA, lift, rB, win, cv];
+  if (vals.some(Number.isNaN)) { out.innerHTML = '<p class="hint">Fill in every field to see the plan.</p>'; return; }
+  if (dv <= 0 || cr <= 0 || aov <= 0 || cr >= 1 || rA < 0 || rB < 0 || rA >= 1 || rB >= 1 || win < 0 || cv < 0) {
+    out.innerHTML = '<div class="error">Check the numbers: visitors, conversion rate and order value must be above zero, and refund rates below 100%.</div>'; return;
+  }
+  const crB = cr * (1 + lift);
+  if (crB >= 1) { out.innerHTML = '<div class="error">That lift would push the conversion rate above 100%.</div>'; return; }
+
+  const A = perVisitor(cr, aov, cv, rA), B = perVisitor(crB, aov, cv, rB);
+  const breakEven = (1 - rA) / (1 - rB) - 1;
+  const delta = B.mean - A.mean, netLift = delta / A.mean;
+  const zA = Z_CONF[$('pConf').value], zB = parseFloat($('pPow').value);
+
+  let html = '';
+  if (delta <= 0) {
+    html += verdict('v-bad', 'At these numbers, B loses money even if the lift is real.',
+      `B needs to convert ${signed(breakEven)} better just to cover its extra refunds, and you expect ${signed(lift)}. Rethink the offer before spending traffic on a test.`);
+    html += `<div class="stats">${stat('Break-even conversion lift', signed(breakEven), 'needed to cover extra refunds')}${stat('Expected net revenue per visitor', `${fmt(A.mean)} → ${fmt(B.mean)}`, `${signed(netLift)} for B`)}</div>`;
+    out.innerHTML = html; return;
+  }
+
+  const n = Math.ceil(Math.pow(zA + zB, 2) * (A.variance + B.variance) / (delta * delta));
+  const days = Math.ceil(2 * n / dv);
+  const weeks = Math.max(2, Math.ceil(days / 7));
+  const totalWeeks = Math.ceil((weeks * 7 + win) / 7);
+
+  if (weeks > 26) {
+    html += verdict('v-warn', 'This lift is too small to detect with your traffic.',
+      `You’d need about ${fmtInt(n)} visitors per version, which is ${weeks} weeks of traffic. Test a bolder change, or only test where traffic is higher.`);
+  } else {
+    html += verdict('v-good', `Run it for ${weeks} weeks, then read it in week ${totalWeeks}.`,
+      `Send ${fmtInt(n)} visitors to each version (${weeks} full weeks at ${fmtInt(dv)} a day), then wait ${fmtInt(win)} days for refunds to come in before deciding.`);
+  }
+  html += `<div class="stats">
+    ${stat('Break-even conversion lift', signed(breakEven), breakEven > 0 ? 'B must beat this just to cover extra refunds' : 'B has no extra refund cost')}
+    ${stat('Expected net revenue per visitor', `${fmt(A.mean)} → ${fmt(B.mean)}`, `${signed(netLift)} for B after refunds`)}
+    ${stat('Visitors per version', fmtInt(n), `about ${weeks} weeks, plus ${fmtInt(win)} days for refunds`)}
+  </div>`;
+  out.innerHTML = html;
+}
+
+// ---------- 2. Read ----------
+function read() {
+  const out = $('readOut');
+  const ids = ['aV', 'aO', 'aR', 'aF', 'bV', 'bO', 'bR', 'bF'];
+  const v = Object.fromEntries(ids.map(i => [i, num(i)]));
+  if (ids.some(i => Number.isNaN(v[i]))) { out.innerHTML = '<p class="hint">Fill in both versions to see the result.</p>'; return; }
+  if (v.aV <= 0 || v.bV <= 0 || v.aO <= 0 || v.bO <= 0 || v.aR <= 0 || v.bR <= 0 || v.aO > v.aV || v.bO > v.bV || v.aF > v.aR || v.bF > v.bR || v.aF < 0 || v.bF < 0) {
+    out.innerHTML = '<div class="error">Check the numbers: each version needs visitors, orders and revenue above zero, orders can’t exceed visitors, and refunds can’t exceed revenue.</div>'; return;
+  }
+  const cvRaw = num('pCv'); const cv = Number.isNaN(cvRaw) ? 0.5 : cvRaw / 100;
+  const alpha = parseFloat($('pConf').value), z = Z_CONF[$('pConf').value];
+
+  const arm = (vis, ord, rev, ref) => {
+    const p = ord / vis, aov = rev / ord, r = ref / rev;
+    return { vis, ord, rev, ref, p, aov, r, gross: rev / vis, net: (rev - ref) / vis, variance: perVisitor(p, aov, cv, r).variance };
+  };
+  const A = arm(v.aV, v.aO, v.aR, v.aF), B = arm(v.bV, v.bO, v.bR, v.bF);
+
+  const diff = B.net - A.net;
+  const se = Math.sqrt(A.variance / A.vis + B.variance / B.vis);
+  const pNet = se > 0 ? 2 * (1 - phi(Math.abs(diff / se))) : 1;
+  const lo = (diff - z * se) / A.net, hi = (diff + z * se) / A.net;
+
+  const seCr = Math.sqrt(A.p * (1 - A.p) / A.vis + B.p * (1 - B.p) / B.vis);
+  const pCr = seCr > 0 ? 2 * (1 - phi(Math.abs((B.p - A.p) / seCr))) : 1;
+
+  let html = '';
+  if (pNet < alpha && diff > 0) {
+    html += verdict('v-good', 'B wins: it earns more per visitor after refunds.',
+      `Net revenue per visitor is ${signed(diff / A.net)} for B (likely between ${signed(lo)} and ${signed(hi)}).`);
+  } else if (pNet < alpha && diff < 0) {
+    html += verdict('v-bad', 'B loses: it earns less per visitor after refunds.',
+      `Net revenue per visitor is ${signed(diff / A.net)} for B (likely between ${signed(lo)} and ${signed(hi)}). Keep A.`);
+  } else if (pCr < alpha && B.p > A.p) {
+    html += verdict('v-warn', 'B converts better, but refunds wipe out the gain.',
+      `B gets ${pct(B.p / A.p - 1)} more orders, but after refunds it earns ${signed(diff / A.net)} per visitor, which is within the noise (likely between ${signed(lo)} and ${signed(hi)}). Judged on conversion alone, this would have looked like a win.`);
+  } else {
+    html += verdict('v-neutral', 'Not enough data yet.',
+      `The difference in net revenue per visitor (${signed(diff / A.net)}) is within the noise; it’s likely between ${signed(lo)} and ${signed(hi)}. Keep the test running to the planned sample size.`);
+  }
+  if (!$('windowDone').checked) {
+    html += verdict('v-warn', 'Refunds aren’t final yet.', 'Some buyers can still ask for a refund, so B’s net revenue will probably fall further. Treat this as a preview until the refund window has closed.');
+  }
+
+  const rows = [
+    ['Visitors', fmtInt(A.vis), fmtInt(B.vis), ''],
+    ['Orders', fmtInt(A.ord), fmtInt(B.ord), ''],
+    ['Conversion rate', pct(A.p, 2), pct(B.p, 2), signed(B.p / A.p - 1)],
+    ['Average order value', fmt(A.aov), fmt(B.aov), signed(B.aov / A.aov - 1)],
+    ['Refunded (share of revenue)', pct(A.r), pct(B.r), ''],
+    ['Revenue per visitor, before refunds', fmt(A.gross), fmt(B.gross), signed(B.gross / A.gross - 1)],
+    ['Net revenue per visitor', fmt(A.net), fmt(B.net), signed(diff / A.net), 'key']
+  ];
+  html += `<div class="table-wrap"><table><thead><tr><th>Metric</th><th>A</th><th>B</th><th>B vs A</th></tr></thead><tbody>${
+    rows.map(r => {
+      const cls = r[3].startsWith('+') ? 'pos' : r[3].startsWith('-') ? 'neg' : '';
+      return `<tr class="${r[4] || ''}"><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td class="${cls}">${r[3]}</td></tr>`;
+    }).join('')}</tbody></table></div>`;
+  out.innerHTML = html;
+}
+
+function fillSample() {
+  const s = { pVisitors: 10000, pCr: 2.5, pAov: 120, pRefA: 6, pLift: 12, pRefB: 10, pWindow: 60, pCv: 50,
+              aV: 162500, aO: 4063, aR: 487560, aF: 29254, bV: 162500, bO: 4563, bR: 547560, bF: 87610 };
+  Object.entries(s).forEach(([k, val]) => { $(k).value = val; });
+  $('pConf').value = '0.05'; $('pPow').value = '0.8416';
+  $('windowDone').checked = true;
+  update();
+}
+
+function update() { plan(); read(); }
+document.querySelectorAll('input, select').forEach(el => el.addEventListener('input', update));
+document.querySelectorAll('select, input[type="checkbox"]').forEach(el => el.addEventListener('change', update));
+$('sampleBtn').addEventListener('click', fillSample);
+update();
+</script>
+</body>
+</html>
